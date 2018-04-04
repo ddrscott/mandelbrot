@@ -4,6 +4,8 @@ require "option_parser"
 Signal::INT.trap { exit 1 }
 Signal::TERM.trap { exit 1 }
 
+ANSI_MAP = %w(@ 0 % * " o ' .)
+
 # Formula from https://www.mathworks.com/help/distcomp/examples/illustrating-three-approaches-to-gpu-computing-the-mandelbrot-set.html?s_tid=gn_loc_drop#d119e4796
 def mandelbrot(real0 : Float64, img0 : Float64, max : Int32) : Int32
   real = real0
@@ -27,9 +29,12 @@ def render(left : Float64, right : Float64, top : Float64, bottom : Float64,
     left.step(to: right, by: step_x) do |x|
       loops = mandelbrot(x, y, max)
       if loops == max
-        result << "*"
-      else
         result << " "
+      elsif loops == 0
+        result << ANSI_MAP[0]
+      else
+        c = loops.fdiv(max) * ANSI_MAP.size
+        result << ANSI_MAP[c.to_i]
       end
     end
     result << "\n"
@@ -38,20 +43,20 @@ def render(left : Float64, right : Float64, top : Float64, bottom : Float64,
   result[0, result.size - 1].join
 end
 
-def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64,
-           max : Int32) String
+def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64, max : Int32) String
+  print "\e[?47h"     # use alternate terminal screen output
   input = ' '
   left0, right0, top0, bottom0 = left, right, top, bottom
   while input != 'q'
     size            = `stty size`.split
-    x, y            = size[1].to_f - 1, size[0].to_f - 3
+    x, y            = size[1].to_f - 1, size[0].to_f - 2
 
     step_x = (right - left) / x
     step_y = (bottom - top) / y
 
     print render(left: left, right: right, top: top, bottom: bottom, step_x: step_x, step_y: step_y, max: max)
-    puts "pan: h/j/k/l, zoom: i=in, o=out, r=reset, q=quit"
-    print "mandelbrot -l #{left} -r #{right} -t #{top} -b #{bottom}] #{step_x} #{step_y}"
+    puts  "\e[1;32m[ pan: h/j/k/l, zoom: i=in, o=out, r=reset, q=quit ]"
+    print "\e[1;36m: mandelbrot -l #{left} -r #{right} -t #{top} -b #{bottom}\e[0m"
 
     input = STDIN.raw &.read_char
     case input
@@ -68,15 +73,17 @@ def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64,
       left -= step_x
       right -= step_x
     when 'i'
-      left += step_x
-      right -= step_x 
-      top -= step_x
-      bottom += step_x
+      inc = step_x.abs
+      left += inc
+      right -= inc
+      top -= inc
+      bottom += inc
     when 'o'
-      left -= step_x
-      right += step_x
-      top += step_x
-      bottom -= step_x
+      dec = step_x.abs
+      left -= dec
+      right += dec
+      top += dec
+      bottom -= dec
     when 'r'
       left = left0
       right = right0
@@ -84,6 +91,8 @@ def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64,
       bottom = bottom0
     end
   end
+ensure
+  print "\e[?47l"     # switch back to primary screen
 end
 
 # Defaults
@@ -92,7 +101,7 @@ right           = 0.5
 top             = 1.0
 bottom          = -1.0
 zoom            = 1.0
-max_iterations  = 100
+max_iterations  = 200
 fps             = -1.0
 delay           = -1.0
 
