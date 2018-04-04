@@ -4,7 +4,7 @@ require "option_parser"
 Signal::INT.trap { exit 1 }
 Signal::TERM.trap { exit 1 }
 
-ANSI_MAP = %w(@ 0 % o * " ' .)
+ANSI_MAP = %w(@ 0 o % X x o * " ' .)
 
 # Formula from https://www.mathworks.com/help/distcomp/examples/illustrating-three-approaches-to-gpu-computing-the-mandelbrot-set.html?s_tid=gn_loc_drop#d119e4796
 def mandelbrot(real0 : Float64, img0 : Float64, max : Int32) : Int32
