@@ -1,16 +1,16 @@
 # Mandelbrot Set
 
+<img src="screenshot.png" alt="Screenshot of Mendelbrot Set" />
+
 ```sh
 # center
-mandelbrot
-```
+./mandelbrot
 
-## Fun Places to Zoom Out
+# another place
+./mandelbrot -l -0.7487667169208654 -r -0.7487666890984621 -t 0.12364085859010267 -b 0.12364084306850771
 
-```sh
-mandelbrot -l -0.7487667169208654 -r -0.7487666890984621 -t 0.12364085859010267 -b 0.12364084306850771
-
-mandelbrot -l -0.10702156711896195 -r -0.10702098035177825 -t -0.9129125599646061 -b -0.9129131344309852
+# yet another place, with more detail
+./mandelbrot -l -0.10731654060226994 -r -0.106766205630802 -t -0.9124674709650323 -b -0.913017793635695 --max 179
 ```
 
 
