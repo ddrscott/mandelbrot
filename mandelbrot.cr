@@ -7,13 +7,12 @@ Signal::TERM.trap { exit 1 }
 ANSI_MAP = %w(@ 0 o % X x o * " ' .)
 
 # Formula from https://www.mathworks.com/help/distcomp/examples/illustrating-three-approaches-to-gpu-computing-the-mandelbrot-set.html?s_tid=gn_loc_drop#d119e4796
-def mandelbrot(real0 : Float64, img0 : Float64, max : Int32) : Int32
+def mandelbrot(real0, img0, max)
   real = real0
   img = img0
   count = 0
   while count < max && real * real + img * img <= 4.0
     count += 1
-    # Update: z = z*z + z0
     old_r = real
     real = real * real - img * img + real0
     img = 2.0 * old_r * img + img0
@@ -21,8 +20,7 @@ def mandelbrot(real0 : Float64, img0 : Float64, max : Int32) : Int32
   return count
 end
 
-def render(left : Float64, right : Float64, top : Float64, bottom : Float64,
-           step_x : Float64, step_y : Float64, max : Int32) String
+def render(left, right, top, bottom, step_x, step_y, max) String
   result = [] of String
   result << "\e[2J\e[0;0H"
   top.step(to: bottom, by: step_y) do |y|
@@ -43,7 +41,7 @@ def render(left : Float64, right : Float64, top : Float64, bottom : Float64,
   result[0, result.size - 1].join
 end
 
-def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64, max : Int32) String
+def zoomer(left, right, top, bottom, max : Int32) String
   print "\e[?47h"     # use alternate terminal screen output
   input = ' '
   left0, right0, top0, bottom0, max0 = left, right, top, bottom, max
