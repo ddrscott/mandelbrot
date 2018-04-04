@@ -4,7 +4,7 @@ require "option_parser"
 Signal::INT.trap { exit 1 }
 Signal::TERM.trap { exit 1 }
 
-ANSI_MAP = %w(@ 0 % * " o ' .)
+ANSI_MAP = %w(@ 0 % o * " ' .)
 
 # Formula from https://www.mathworks.com/help/distcomp/examples/illustrating-three-approaches-to-gpu-computing-the-mandelbrot-set.html?s_tid=gn_loc_drop#d119e4796
 def mandelbrot(real0 : Float64, img0 : Float64, max : Int32) : Int32
@@ -55,45 +55,31 @@ def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64, max
     step_y = (bottom - top) / y
 
     print render(left: left, right: right, top: top, bottom: bottom, step_x: step_x, step_y: step_y, max: max)
-    puts  "\e[1;32m[ pan: h/j/k/l, zoom: i=in, o=out, r=reset, q=quit, iterations: K: more, J: less ]"
+    print "\e[1;32m  pan: w/a/s/d, zoom: i=in, o=out, r=reset, iterations: =: more, -: less, quit: q\n"
     print "\e[1;36m: mandelbrot -l #{left} -r #{right} -t #{top} -b #{bottom} --max #{max}\e[0m"
 
+    inc = [step_x.abs, step_y.abs].max
     input = STDIN.raw &.read_char
     case input
-    when 'l'
-      left += step_x
-      right += step_x
-    when 'k'
-      top -= step_y
-      bottom -= step_y
-    when 'j'
-      top += step_y
-      bottom += step_y
-    when 'h'
-      left -= step_x
-      right -= step_x
+    when 'd'
+      left += inc; right += inc
+    when 's'
+      top -= inc; bottom -= inc
+    when 'w'
+      top += inc; bottom += inc
+    when 'a'
+      left -= inc; right -= inc
     when 'i'
-      inc = step_x.abs
-      left += inc
-      right -= inc
-      top -= inc
-      bottom += inc
+      left += inc; right -= inc; top -= inc; bottom += inc
     when 'o'
-      dec = step_x.abs
-      left -= dec
-      right += dec
-      top += dec
-      bottom -= dec
+      left -= inc; right += inc; top += inc; bottom -= inc
     when 'r'
-      left = left0
-      right = right0
-      top = top0
-      bottom = bottom0
+      left = left0; right = right0; top = top0; bottom = bottom0
       max = max0
-    when 'K'
-      max += 10
-    when 'J'
-      max -= 10
+    when '='
+      max += 1
+    when '-'
+      max -= 1
     end
   end
 ensure
