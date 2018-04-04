@@ -46,7 +46,7 @@ end
 def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64, max : Int32) String
   print "\e[?47h"     # use alternate terminal screen output
   input = ' '
-  left0, right0, top0, bottom0 = left, right, top, bottom
+  left0, right0, top0, bottom0, max0 = left, right, top, bottom, max
   while input != 'q'
     size            = `stty size`.split
     x, y            = size[1].to_f - 1, size[0].to_f - 2
@@ -55,8 +55,8 @@ def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64, max
     step_y = (bottom - top) / y
 
     print render(left: left, right: right, top: top, bottom: bottom, step_x: step_x, step_y: step_y, max: max)
-    puts  "\e[1;32m[ pan: h/j/k/l, zoom: i=in, o=out, r=reset, q=quit ]"
-    print "\e[1;36m: mandelbrot -l #{left} -r #{right} -t #{top} -b #{bottom}\e[0m"
+    puts  "\e[1;32m[ pan: h/j/k/l, zoom: i=in, o=out, r=reset, q=quit, iterations: K: more, J: less ]"
+    print "\e[1;36m: mandelbrot -l #{left} -r #{right} -t #{top} -b #{bottom} --max #{max}\e[0m"
 
     input = STDIN.raw &.read_char
     case input
@@ -89,6 +89,11 @@ def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64, max
       right = right0
       top = top0
       bottom = bottom0
+      max = max0
+    when 'K'
+      max += 10
+    when 'J'
+      max -= 10
     end
   end
 ensure
@@ -101,7 +106,7 @@ right           = 0.5
 top             = 1.0
 bottom          = -1.0
 zoom            = 1.0
-max_iterations  = 200
+max_iterations  = 100
 fps             = -1.0
 delay           = -1.0
 
