@@ -22,6 +22,7 @@ end
 def render(left : Float64, right : Float64, top : Float64, bottom : Float64,
            step_x : Float64, step_y : Float64, max : Int32) String
   result = [] of String
+  result << "\e[2J\e[0;0H"
   top.step(to: bottom, by: step_y) do |y|
     left.step(to: right, by: step_x) do |x|
       loops = mandelbrot(x, y, max)
@@ -33,17 +34,65 @@ def render(left : Float64, right : Float64, top : Float64, bottom : Float64,
     end
     result << "\n"
   end
+  result << "\e[0m"
   result[0, result.size - 1].join
 end
 
+def zoomer(left : Float64, right : Float64, top : Float64, bottom : Float64,
+           max : Int32) String
+  input = ' '
+  left0, right0, top0, bottom0 = left, right, top, bottom
+  while input != 'q'
+    size            = `stty size`.split
+    x, y            = size[1].to_f - 1, size[0].to_f - 3
+
+    step_x = (right - left) / x
+    step_y = (bottom - top) / y
+
+    print render(left: left, right: right, top: top, bottom: bottom, step_x: step_x, step_y: step_y, max: max)
+    puts "pan: h/j/k/l, zoom: i=in, o=out, r=reset, q=quit"
+    print "mandelbrot -l #{left} -r #{right} -t #{top} -b #{bottom}] #{step_x} #{step_y}"
+
+    input = STDIN.raw &.read_char
+    case input
+    when 'l'
+      left += step_x
+      right += step_x
+    when 'k'
+      top -= step_y
+      bottom -= step_y
+    when 'j'
+      top += step_y
+      bottom += step_y
+    when 'h'
+      left -= step_x
+      right -= step_x
+    when 'i'
+      left += step_x
+      right -= step_x 
+      top -= step_x
+      bottom += step_x
+    when 'o'
+      left -= step_x
+      right += step_x
+      top += step_x
+      bottom -= step_x
+    when 'r'
+      left = left0
+      right = right0
+      top = top0
+      bottom = bottom0
+    end
+  end
+end
+
 # Defaults
-size            = `stty size`.split
-x, y            = size[1].to_f - 1, size[0].to_f - 3
 left            = -2.0
 right           = 0.5
 top             = 1.0
 bottom          = -1.0
-max_iterations  = 50
+zoom            = 1.0
+max_iterations  = 100
 fps             = -1.0
 delay           = -1.0
 
@@ -53,6 +102,7 @@ OptionParser.parse! do |parser|
   parser.on("-r RIGHT", "--right=RIGHT", "initial right edge") { |val| right = val.to_f }
   parser.on("-t TOP", "--top=TOP", "initial top edge") { |val| top = val.to_f }
   parser.on("-b BOTTOM", "--bottom=BOTTOM", "initial bottom edge") { |val| bottom = val.to_f }
+  parser.on("-z ZOOM", "--zoom=ZOOM", "initial zoom") { |val| zoom = val.to_f }
   parser.on("--max MAX", "--max=MAX", "max iterations") { |val| max_iterations = val.to_i }
   parser.on("--fps=FPS", "max FPS") { |val| delay = 1.0 / val.to_f }
   parser.on("--help", "Show this help") do
@@ -61,10 +111,4 @@ OptionParser.parse! do |parser|
   end
 end
 
-step_x = (right - left) / x # 0.0315
-step_y = (bottom - top) / y #  -0.05
-
-io = STDOUT
-io.print "\e[2J\e[0;0H"
-io.print render(left: left, right: right, top: top, bottom: bottom, step_x: step_x, step_y: step_y, max: max_iterations)
-io.print "\e[#{size[0]};#{size[1]}H\e[0m"
+zoomer(left: left, right: right, top: top, bottom: bottom, max: max_iterations)
