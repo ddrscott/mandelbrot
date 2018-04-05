@@ -1,16 +1,16 @@
 /* Thanks:
  * - https://www.tinycranes.com/blog/2015/05/visualizing-the-mandelbrot-set/
  */
-__kernel void mandel(__global float const * real0,
-                     __global float const * img0,
+__kernel void mandel(__global double const * real0,
+                     __global double const * img0,
                               int max,
                      __global int * result) {
   unsigned int i = get_global_id(0);
 
-  float real = real0[i];
-  float img = img0[i];
-  float count = 0;
-  float old_r = 0;
+  double real = real0[i];
+  double img = img0[i];
+  int count = 0;
+  double old_r = 0;
   while ((count < max) && (real * real + img * img <= 4.0))
   {
     count++;
