@@ -1,26 +1,23 @@
 /* Thanks:
  * - https://www.tinycranes.com/blog/2015/05/visualizing-the-mandelbrot-set/
  */
-__kernel void mandelbrot(__global float const * real,
-                               __global float const * imag,
-                                        int iterations,
-                               __global int * result) {
+__kernel void mandel(__global float const * real0,
+                     __global float const * img0,
+                              int max,
+                     __global int * result) {
   unsigned int i = get_global_id(0);
 
-  float x = real[i]; // Real Component
-  float y = imag[i]; // Imaginary Component
-  int   n = 0;       // Tracks Color Information
-
-  // Compute the Mandelbrot Set
-  while ((x * x + y * y <= 4) && n < iterations)
+  float real = real0[i];
+  float img = img0[i];
+  float count = 0;
+  float old_r = 0;
+  while ((count < max) && (real * real + img * img <= 4.0))
   {
-    float xtemp = x * x - y * y + real[i];
-    y = 2 * x * y + imag[i];
-    x = xtemp;
-    n++;
+    count++;
+    old_r = real;
+    real = real * real - img * img + real0[i];
+    img = 2.0 * old_r * img + img0[i];
   }
-
-  // Write Results to Output Arrays
-  result[i] = n;
+  result[i] = count;
 }
 // vim:ft=c

@@ -37,12 +37,16 @@ p [step_w, step_h]
 x_in = []
 y_in = []
 
-top.step(bottom, step_h).with_index do |y, r|
-  left.step(right, step_w).with_index do |x, c|
-    offset = r * cols + c
+y = top
+rows.times do |r|
+  x = left
+  cols.times do |c|
+    offset =  r * cols + c
     x_in[offset] = x
     y_in[offset] = y
+    x += step_w
   end
+  y += step_h
 end
 
 ruby_result = []
