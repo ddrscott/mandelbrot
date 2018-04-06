@@ -23,7 +23,7 @@ require 'narray_ffi'
 platform = OpenCL.platforms.first
 device = platform.devices.first
 context = OpenCL.create_context(device)
-queue = context.create_command_queue(device)
+queue = context.create_command_queue(device, properties: OpenCL::CommandQueue::PROFILING_ENABLE)
 source = File.read(File.join(File.expand_path(__dir__), '..', 'kernel', 'mandel.cl'))
 prog = context.create_program_with_source(source)
 prog.build
@@ -56,12 +56,12 @@ k.set_arg(1, y_buff)
 k.set_arg(2, iterations)
 k.set_arg(3, result_buff)
 
-10.times do
 puts "OpenCL Time: " + (Benchmark.measure {
-  event = queue.enqueue_ndrange_kernel(k, [num_points])#, local_work_size: [128])
+  event = queue.enqueue_ndrange_kernel(k, [num_points])
+  # Using local_work_size doesn't make a difference.
+  #   event = queue.enqueue_ndrange_kernel(k, [num_points], local_work_size: [128])
   queue.enqueue_read_buffer(result_buff, result_out, event_wait_list: [event], blocking_read: true)
   queue.finish
 }).to_s
-end
 
 WritePNG.write_png(cols:cols, rows:rows, max: max, values: result_out, dst: 'images/opencl.png')
