@@ -1,0 +1,10 @@
+name: mandelbrot
+version: 0.1.0
+
+dependencies:
+  crOpenCL:
+    github: cconklin/crOpenCL
+  sdl:
+    github: ysbaddaden/sdl.cr
+
+license: MIT

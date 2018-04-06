@@ -1,0 +1,10 @@
+version: 1.0
+shards:
+  crOpenCL:
+    github: cconklin/crOpenCL
+    commit: d873228ab38dcdfae27819d8d084c2b7e380ffa1
+
+  sdl:
+    github: ysbaddaden/sdl.cr
+    commit: 17d714dff6fe78deba173d4eb131722db915163c
+
